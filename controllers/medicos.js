@@ -39,23 +39,23 @@ const crearMedico = async (req, res = response) => {
 
 };
 
+
 const borrarMedico = async  (req, res = response) => {
-  const uid = req.params.id;
+  const id = req.params.id;
 
   try {
-    const medicoDb = await Medico.findById(uid);
+    const medicoDb = await Medico.findById(id);
     if(!medicoDb){
-      res.status(404).json({
+      return res.status(404).json({
         ok: false,
         msg: 'No existe medico con es id'}
       );
     }
-    //eliminar medico
 
-    await Medico.findByIdAndDelete(uid);
+    await  Medico.findByIdAndDelete(id);
     res.json({
       ok: true,
-      msg: 'Medico eliminado'
+      msg: 'medico Eliminado'
     });
 
 
@@ -68,38 +68,30 @@ const borrarMedico = async  (req, res = response) => {
   }
 };
 const actualizarMedico = async (req, res = response) => {
-  // TODO: Validar TOken y comprobar si el medico es el correcto
 
-  const uid = req.params.id;
+  const id = req.params.id;
+  const uid = req.uid;
 
   try {
-    const medicoDb = await Medico.findById(uid);
+    const medicoDb = await Medico.findById(id);
     if(!medicoDb){
-      res.status(404).json({
+      return res.status(404).json({
         ok: false,
         msg: 'No existe medico con es id'}
       );
     }
-    //actualizacion
-    const {password, google,email, ...campos} = req.body;
-
-    if(medicoDb.email !== email){
-
-      const existeEmail = await Medico.findOne({email : email});
-      if(existeEmail){
-        return res.status(400).json({
-          ok:false,
-          msg: 'Ya existe medico con ese email'
-        });
-      }
+    const cambiosMedico = {
+      ...req.body,
+      usuario: uid,
     }
-    campos.email = email;
 
-    const MedicoActualizado = await Medico.findByIdAndUpdate(uid, campos, { new :true });
+    const medicoActualizado = await Medico.findByIdAndUpdate(id, cambiosMedico, {new: true});
+
+    medicoDb.nombre = req.body.nombre;
 
     res.json({
       ok: true,
-      MedicoActualizado
+      medico: medicoActualizado
     });
 
 

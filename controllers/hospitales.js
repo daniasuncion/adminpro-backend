@@ -43,22 +43,21 @@ const crearHospital = async (req, res = response) => {
 };
 
 const borrarHospital = async  (req, res = response) => {
-  const uid = req.params.id;
+  const id = req.params.id;
 
   try {
-    const hospitalDb = await Hospital.findById(uid);
+    const hospitalDb = await Hospital.findById(id);
     if(!hospitalDb){
-      res.status(404).json({
+      return res.status(404).json({
         ok: false,
         msg: 'No existe hospital con es id'}
       );
     }
-    //eliminar hospital
 
-    await Hospital.findByIdAndDelete(uid);
+    await  Hospital.findByIdAndDelete(id);
     res.json({
       ok: true,
-      msg: 'Hospital eliminado'
+      msg: 'hospital Eliminado'
     });
 
 
@@ -73,36 +72,29 @@ const borrarHospital = async  (req, res = response) => {
 const actualizarHospital = async (req, res = response) => {
   // TODO: Validar TOken y comprobar si el hospital es el correcto
 
-  const uid = req.params.id;
+  const id = req.params.id;
+  const uid = req.uid;
 
   try {
-    const hospitalDb = await Hospital.findById(uid);
+    const hospitalDb = await Hospital.findById(id);
     if(!hospitalDb){
-      res.status(404).json({
+      return res.status(404).json({
         ok: false,
         msg: 'No existe hospital con es id'}
       );
     }
-    //actualizacion
-    const {password, google,email, ...campos} = req.body;
-
-    if(hospitalDb.email !== email){
-
-      const existeEmail = await Hospital.findOne({email : email});
-      if(existeEmail){
-        return res.status(400).json({
-          ok:false,
-          msg: 'Ya existe hospital con ese email'
-        });
-      }
+    const cambiosHospital = {
+      ...req.body,
+      usuario: uid,
     }
-    campos.email = email;
 
-    const HospitalActualizado = await Hospital.findByIdAndUpdate(uid, campos, { new :true });
+    const hospitalActualizado = await Hospital.findByIdAndUpdate(id, cambiosHospital, {new: true});
+
+    hospitalDb.nombre = req.body.nombre;
 
     res.json({
       ok: true,
-      HospitalActualizado
+      hospital: hospitalActualizado
     });
 
 
